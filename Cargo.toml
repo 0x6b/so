@@ -1,11 +1,7 @@
 [package]
-name = "slack-open"
+name = "so"
 version = "0.1.0"
 edition = "2021"
-
-[[bin]]
-name = "so"
-path = "src/main.rs"
 
 [dependencies]
 # Error handling
@@ -19,8 +15,10 @@ open = "5.3.1"
 
 # Ser/de
 serde = { version = "1.0.215", features = ["derive"] }
-skim = "0.13.0"
 toml = "0.8.19"
 
 # Configuration directory
 xdg = "2.5.2"
+
+# Interactive selection
+skim = "0.13.0"

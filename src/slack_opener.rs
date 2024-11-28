@@ -80,7 +80,7 @@ impl SlackOpener {
 
     fn parse_config(path: Option<PathBuf>) -> Result<Config> {
         let path = path.unwrap_or_else(|| {
-            xdg::BaseDirectories::with_prefix("sopen")
+            xdg::BaseDirectories::with_prefix("so")
                 .unwrap()
                 .place_config_file("config.toml")
                 .unwrap()

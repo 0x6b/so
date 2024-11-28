@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::Parser;
-use slack_open::{ChannelName, SlackOpener};
+use so::{ChannelName, SlackOpener};
 
 #[derive(Debug, Parser)]
 #[clap(version)]
@@ -11,7 +11,7 @@ pub struct Args {
     #[arg()]
     pub channel_name: Option<ChannelName>,
 
-    /// Path to the configuration file. Defaults to $XDG_CONFIG_HOME/slack-open/config.toml.
+    /// Path to the configuration file. Defaults to $XDG_CONFIG_HOME/so/config.toml.
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 }

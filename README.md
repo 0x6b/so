@@ -1,16 +1,37 @@
-# slack-open
+# so
 
 Open a Slack channel using the [deep link](https://api.slack.com/reference/deep-linking#supported_URIs) instead of the `https://` scheme.
 
 ## Usage
 
 ```console
-$ sopen --help
+$ so --help
+Usage: so [OPTIONS] [CHANNEL_NAME]
+
+Arguments:
+  [CHANNEL_NAME]  The name of the channel to open. If not provided, select from a list of available channels
+
+Options:
+  -c, --config <CONFIG>  Path to the configuration file. Defaults to $XDG_CONFIG_HOME/so/config.toml
+  -h, --help             Print help
+  -V, --version          Print version
+```
+
+i.e.
+
+```console
+$ so random
+```
+
+or
+
+```console
+$ so # to select a channel from a list interactively
 ```
 
 ## Configuration
 
-Place your configuration file at `$XDG_CONFIG_HOME/sopen/config.toml`, or provide the path using the `--config` option.
+Place your configuration file at `$XDG_CONFIG_HOME/so/config.toml` or provide the path using the `--config` option.
 
 ```toml
 # Slack team ID
@@ -29,4 +50,5 @@ team_id = "Txxxxxxxx"
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE) for details.
+
