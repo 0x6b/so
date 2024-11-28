@@ -1,6 +1,9 @@
-use std::{fs::read_to_string, ops::Deref, path::PathBuf};
+use std::{fs::read_to_string, ops::Deref, path::PathBuf, sync::Arc};
 
 use anyhow::{anyhow, Result};
+use skim::{
+    options::SkimOptionsBuilder, prelude::unbounded, Skim, SkimItemReceiver, SkimItemSender,
+};
 
 use crate::{ChannelId, ChannelName, Config};
 
@@ -43,6 +46,36 @@ impl SlackOpener {
         //
         // See also: https://api.slack.com/reference/deep-linking#open_a_channel
         open::that(format!("slack://channel?team={}&id={id}", self.team_id)).map_err(Into::into)
+    }
+
+    pub fn open_prompt(&self) -> Result<()> {
+        let options = SkimOptionsBuilder::default()
+            .height(String::from("5"))
+            .multi(false)
+            .build()?;
+
+        let (tx_item, rx_item): (SkimItemSender, SkimItemReceiver) = unbounded();
+        self.channels
+            .keys()
+            .map(|name| Arc::new(name.clone()))
+            .for_each(|item| {
+                let _ = tx_item.send(item);
+            });
+        drop(tx_item); // so that skim could know when to stop waiting for more items.
+
+        match Skim::run_with(&options, Some(rx_item)) {
+            Some(out) if out.is_abort => return Ok(()),
+            Some(out) => {
+                let name = out
+                    .selected_items
+                    .first()
+                    .ok_or_else(|| anyhow!("No channel selected"))?
+                    .as_ref()
+                    .text();
+                self.open(&name.into())
+            }
+            None => Ok(()),
+        }
     }
 
     fn parse_config(path: Option<PathBuf>) -> Result<Config> {

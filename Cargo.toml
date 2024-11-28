@@ -19,6 +19,7 @@ open = "5.3.1"
 
 # Ser/de
 serde = { version = "1.0.215", features = ["derive"] }
+skim = "0.13.0"
 toml = "0.8.19"
 
 # Configuration directory
