@@ -64,17 +64,11 @@ impl SlackOpener {
         drop(tx_item); // so that skim could know when to stop waiting for more items.
 
         match Skim::run_with(&options, Some(rx_item)) {
-            Some(out) if out.is_abort => return Ok(()),
-            Some(out) => {
-                let name = out
-                    .selected_items
-                    .first()
-                    .ok_or_else(|| anyhow!("No channel selected"))?
-                    .as_ref()
-                    .text();
-                self.open(&name.into())
+            Some(out) if out.is_abort => Ok(()),
+            Some(out) if !out.selected_items.is_empty() => {
+                self.open(&out.selected_items.first().unwrap().text().into())
             }
-            None => Ok(()),
+            _ => Ok(()),
         }
     }
 

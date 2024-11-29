@@ -20,9 +20,8 @@ fn main() -> Result<()> {
     let Args { channel_name, config } = Args::parse();
     let opener = SlackOpener::from(config)?;
 
-    if let Some(channel_name) = channel_name {
-        opener.open(&channel_name)
-    } else {
-        opener.open_prompt()
+    match channel_name {
+        Some(channel_name) => opener.open(&channel_name),
+        None => opener.open_prompt(),
     }
 }
