@@ -2,6 +2,7 @@
 name = "so"
 version = "0.1.0"
 edition = "2021"
+description = "Open a Slack channel using the deep link i.e. slack://, instead of the https:// to prevent the browser from opening the channel in a new tab."
 
 [dependencies]
 # Error handling
