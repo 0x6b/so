@@ -9,7 +9,7 @@ description = "Open a Slack channel using the deep link i.e. slack://, instead o
 anyhow = "1.0.93"
 
 # Command line parsing
-clap = { version = "4.5.21", features = ["derive"] }
+clap = { version = "4.5.21", features = ["derive", "wrap_help"] }
 
 # Open URI
 open = "5.3.1"
@@ -23,3 +23,6 @@ xdg = "2.5.2"
 
 # Interactive selection
 skim = "0.13.0"
+
+# Tilde expansion
+shellexpand = "3.1.0"

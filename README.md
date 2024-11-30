@@ -6,13 +6,19 @@ Open a Slack channel using the [deep link](https://api.slack.com/reference/deep-
 
 ```console
 $ so --help
-Usage: so [OPTIONS] [CHANNEL_NAME]
+Usage: so [OPTIONS] [CHANNEL_NAME] [COMMAND]
+
+Commands:
+  generate-completion  Generate shell completion script
+  help                 Print this message or the help of the given subcommand(s)
 
 Arguments:
-  [CHANNEL_NAME]  The name of the channel to open. If not provided, select from a list of available channels
+  [CHANNEL_NAME]  The name of the channel to open. If not provided, select from a list
+                  of available channels
 
 Options:
-  -c, --config <CONFIG>  Path to the configuration file. Defaults to $XDG_CONFIG_HOME/so/config.toml
+  -c, --config <CONFIG>  Path to the configuration file. Defaults to
+                         $XDG_CONFIG_HOME/so/config.toml
   -h, --help             Print help
   -V, --version          Print version
 ```
@@ -23,11 +29,13 @@ i.e.
 $ so random
 ```
 
-or
+or, run it without an argument to select a channel from a list interactively:
 
 ```console
-$ so # to select a channel from a list interactively
+$ so
 ```
+
+If you are using the [fish](https://fishshell.com/) shell, you can generate a completion script using the `generate-completion` command.
 
 ## Configuration
 
@@ -47,6 +55,33 @@ team_id = "Txxxxxxxx"
 "channel_name" = "channel ID"
 # ...
 ```
+
+## Shell Completion
+
+Completion script is available for the [fish](https://fishshell.com/).
+
+```console
+$ so generate-completion --help
+Generate shell completion script
+
+Usage: so generate-completion [OPTIONS]
+
+Options:
+  -s, --shell <SHELL>  The shell to generate completion scripts for. At the moment,
+                       only `fish` is supported [default: fish]
+  -p, --path <PATH>    The path to write the completion script to [default:
+                       ~/.config/fish/completions/so.fish]
+  -h, --help           Print help
+```
+
+i.e.
+
+```console
+$ so generate-completion
+```
+
+which means you cannot use the channel name "generate-completion" as an argument. If you want to use it, provide an alias in the configuration file.
+
 
 ## License
 
