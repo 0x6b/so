@@ -22,7 +22,7 @@ toml = "0.8.19"
 xdg = "2.5.2"
 
 # Interactive selection
-skim = "0.13.0"
+skim = "0.14.3"
 
 # Tilde expansion
 shellexpand = "3.1.0"
