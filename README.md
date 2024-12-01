@@ -18,6 +18,7 @@ Arguments:
                   of available channels
 
 Options:
+  -b, --browser          Open the channel in the browser instead of the Slack app
   -c, --config <CONFIG>  Path to the configuration file. Defaults to
                          $XDG_CONFIG_HOME/so/config.toml
   -h, --help             Print help

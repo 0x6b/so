@@ -42,15 +42,21 @@ impl SlackOpener {
     /// # Arguments
     ///
     /// - `channel_name` - The name of the channel to open.
-    pub fn open(&self, name: &ChannelName) -> Result<()> {
+    /// - `browser` - Whether to open the channel in the browser or a Slack app.
+    pub fn open(&self, name: &ChannelName, browser: bool) -> Result<()> {
         let id = self
             .get_channel_id(name)
             .ok_or_else(|| anyhow!("Channel not found: {name}"))?;
 
-        // The `slack://` URI scheme is supported by the Slack desktop app.
-        //
-        // See also: https://api.slack.com/reference/deep-linking#open_a_channel
-        open::that(format!("slack://channel?team={}&id={id}", self.team_id)).map_err(Into::into)
+        if browser {
+            open::that(format!("https://app.slack.com/client/{}/{id}", self.team_id))
+                .map_err(Into::into)
+        } else {
+            // The `slack://` URI scheme is supported by the Slack desktop app.
+            //
+            // See also: https://api.slack.com/reference/deep-linking#open_a_channel
+            open::that(format!("slack://channel?team={}&id={id}", self.team_id)).map_err(Into::into)
+        }
     }
 
     pub fn open_prompt(&self) -> Result<()> {
@@ -71,7 +77,7 @@ impl SlackOpener {
         match Skim::run_with(&options, Some(rx_item)) {
             Some(out) if out.is_abort => Ok(()),
             Some(out) if !out.selected_items.is_empty() => {
-                self.open(&out.selected_items.first().unwrap().text().into())
+                self.open(&out.selected_items.first().unwrap().text().into(), browser)
             }
             _ => Ok(()),
         }
