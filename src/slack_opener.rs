@@ -1,15 +1,20 @@
-use std::{fs::read_to_string, ops::Deref, path::PathBuf, sync::Arc};
+use std::{collections::BTreeMap, ops::Deref, path::PathBuf, sync::Arc};
 
 use anyhow::{anyhow, Result};
 use skim::{
     options::SkimOptionsBuilder, prelude::unbounded, Skim, SkimItemReceiver, SkimItemSender,
 };
+use tokio::fs::{read_to_string, write};
 
 use crate::{ChannelId, ChannelName, Config};
 
 /// A Slack channel opener, which ...opens a Slack channel directly (means it opens the Slack
 /// channel without opening a browser).
 pub struct SlackOpener {
+    /// Resolved path to the configuration file.
+    path: PathBuf,
+
+    /// The configuration.
     config: Config,
 }
 
@@ -27,9 +32,9 @@ impl SlackOpener {
     /// # Arguments
     ///
     /// - `config` - Path to the configuration file.
-    pub fn from(config_path: Option<PathBuf>) -> Result<Self> {
-        let config = Self::parse_config(config_path)?;
-        Ok(Self { config })
+    pub async fn from(config_path: Option<PathBuf>) -> Result<Self> {
+        let (path, config) = Self::parse_config(config_path).await?;
+        Ok(Self { path, config })
     }
 
     /// Open the Slack channel in the default browser.
@@ -72,15 +77,21 @@ impl SlackOpener {
         }
     }
 
-    fn parse_config(path: Option<PathBuf>) -> Result<Config> {
+    async fn parse_config(path: Option<PathBuf>) -> Result<(PathBuf, Config)> {
         let path = path.unwrap_or_else(|| {
             xdg::BaseDirectories::with_prefix("so")
                 .unwrap()
                 .place_config_file("config.toml")
                 .unwrap()
         });
+        let config = toml::from_str::<Config>(&read_to_string(&path).await?)?;
 
-        Ok(toml::from_str::<Config>(&read_to_string(&path)?)?)
+        Ok((path, config))
+    }
+
+    pub async fn update_config(&self, channels: BTreeMap<ChannelName, ChannelId>) -> Result<()> {
+        write(&self.path, toml::to_string(&Config { channels, ..self.config.clone() })?).await?;
+        Ok(())
     }
 
     fn get_channel_id(&self, name: &ChannelName) -> Option<ChannelId> {

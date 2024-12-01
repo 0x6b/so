@@ -1,6 +1,6 @@
 [package]
 name = "so"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "Open a Slack channel using the deep link i.e. slack://, instead of the https:// to prevent the browser from opening the channel in a new tab."
 
@@ -9,7 +9,7 @@ description = "Open a Slack channel using the deep link i.e. slack://, instead o
 anyhow = "1.0.93"
 
 # Command line parsing
-clap = { version = "4.5.21", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.21", features = ["derive", "wrap_help", "env"] }
 
 # Open URI
 open = "5.3.1"
@@ -22,7 +22,13 @@ toml = "0.8.19"
 xdg = "2.5.2"
 
 # Interactive selection
-skim = "0.14.3"
+skim = "0.15.0"
 
 # Tilde expansion
 shellexpand = "3.1.0"
+
+# Async runtime
+tokio = { version = "1.41.1", features = ["fs", "io-std", "io-util", "rt-multi-thread", "macros"] }
+
+# Slack API client
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.6.0" }

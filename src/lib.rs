@@ -4,11 +4,11 @@ mod slack_opener;
 use std::{borrow::Cow, fmt::Display, ops::Deref, str::FromStr};
 
 pub use config::Config;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use skim::SkimItem;
 pub use slack_opener::SlackOpener;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct ChannelName {
     inner: String,
 }
