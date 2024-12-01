@@ -1,16 +1,13 @@
-use std::{
-    fmt,
-    fmt::Display,
-    fs::File,
-    io::{BufWriter, Write},
-    path::PathBuf,
-    str::FromStr,
-};
+use std::{fmt, fmt::Display, path::PathBuf, str::FromStr};
 
 use anyhow::{anyhow, Error, Result};
 use clap::Parser;
 use shellexpand::tilde;
 use so::{ChannelName, SlackOpener};
+use tokio::{
+    fs::File,
+    io::{AsyncWriteExt, BufWriter},
+};
 
 #[derive(Debug, Parser)]
 #[clap(version)]
@@ -66,20 +63,30 @@ impl FromStr for Shell {
     }
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let Args { channel_name, config, command } = Args::parse();
-    let opener = SlackOpener::from(config)?;
+    let opener = SlackOpener::from(config).await?;
 
     match command {
         Some(Command::GenerateCompletion { shell: _, path }) => {
-            let mut out = BufWriter::new(File::create(PathBuf::from(tilde(&path).to_string()))?);
+            let mut out =
+                BufWriter::new(File::create(PathBuf::from(tilde(&path).to_string())).await?);
 
-            writeln!(out, "# Channel name completions for so command")?;
-            writeln!(out, r#"complete -c so -f -n "not __fish_seen_subcommand_from completion""#)?;
-            opener.channels.iter().map(|c| c.0).for_each(|name| {
-                writeln!(out, r##"complete -c so -f -n "not __fish_seen_subcommand_from completion" -a "{name}" -d "#{name}""##).unwrap();
-            });
+            out.write_all(b"# fish shell completions for so command\n").await?;
+            out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
+                .await?;
+            for name in opener.channels.iter().map(|c| c.0) {
+                out.write_all(
+                    format!(
+                        "complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a \"{name}\" -d \"#{name}\"\n",
+                    )
+                        .as_bytes(),
+                )
+                    .await?;
+            }
 
+            out.flush().await?;
             Ok(())
         }
         None => match channel_name {

@@ -1,9 +1,10 @@
-use std::{fs::read_to_string, ops::Deref, path::PathBuf, sync::Arc};
+use std::{ops::Deref, path::PathBuf, sync::Arc};
 
 use anyhow::{anyhow, Result};
 use skim::{
     options::SkimOptionsBuilder, prelude::unbounded, Skim, SkimItemReceiver, SkimItemSender,
 };
+use tokio::fs::read_to_string;
 
 use crate::{ChannelId, ChannelName, Config};
 
@@ -27,8 +28,8 @@ impl SlackOpener {
     /// # Arguments
     ///
     /// - `config` - Path to the configuration file.
-    pub fn from(config_path: Option<PathBuf>) -> Result<Self> {
-        let config = Self::parse_config(config_path)?;
+    pub async fn from(config_path: Option<PathBuf>) -> Result<Self> {
+        let config = Self::parse_config(config_path).await?;
         Ok(Self { config })
     }
 
@@ -72,7 +73,7 @@ impl SlackOpener {
         }
     }
 
-    fn parse_config(path: Option<PathBuf>) -> Result<Config> {
+    async fn parse_config(path: Option<PathBuf>) -> Result<Config> {
         let path = path.unwrap_or_else(|| {
             xdg::BaseDirectories::with_prefix("so")
                 .unwrap()
@@ -80,7 +81,7 @@ impl SlackOpener {
                 .unwrap()
         });
 
-        Ok(toml::from_str::<Config>(&read_to_string(&path)?)?)
+        Ok(toml::from_str::<Config>(&read_to_string(&path).await?)?)
     }
 
     fn get_channel_id(&self, name: &ChannelName) -> Option<ChannelId> {
