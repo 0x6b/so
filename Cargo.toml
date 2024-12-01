@@ -2,7 +2,7 @@
 name = "so"
 version = "0.4.0"
 edition = "2021"
-description = "Open a Slack channel using the deep link i.e. slack://, instead of the https:// to prevent the browser from opening the channel in a new tab."
+description = "Open a Slack channel using slack://... or https://app.slack.com/... to prevent Slack from leaving the redirect tab open in your browser."
 
 [dependencies]
 # Error handling

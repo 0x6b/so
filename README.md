@@ -1,6 +1,6 @@
 # so
 
-Open a Slack channel using the [deep link](https://api.slack.com/reference/deep-linking#supported_URIs) i.e. `slack://`, instead of the `https://` to prevent the browser from opening the channel in a new tab.
+Open a Slack channel using [deep link](https://api.slack.com/reference/deep-linking#supported_URIs) i.e. `slack://...` or `https://app.slack.com/...` to prevent Slack from leaving the redirect tab open in your browser.
 
 ## Usage
 
