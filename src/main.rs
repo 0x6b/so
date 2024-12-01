@@ -17,6 +17,10 @@ pub struct Args {
     #[arg()]
     pub channel_name: Option<ChannelName>,
 
+    /// Open the channel in the browser instead of the Slack app.
+    #[arg(short, long)]
+    pub browser: bool,
+
     /// Path to the configuration file. Defaults to $XDG_CONFIG_HOME/so/config.toml.
     #[arg(short, long)]
     pub config: Option<PathBuf>,
@@ -73,7 +77,7 @@ impl FromStr for Shell {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let Args { channel_name, config, command } = Args::parse();
+    let Args { channel_name, browser, config, command } = Args::parse();
     let opener = SlackOpener::from(config).await?;
 
     match command {
@@ -139,8 +143,8 @@ async fn main() -> Result<()> {
             Ok(())
         }
         None => match channel_name {
-            Some(channel_name) => opener.open(&channel_name),
-            None => opener.open_prompt(),
+            Some(channel_name) => opener.open(&channel_name, browser),
+            None => opener.open_prompt(browser),
         },
     }
 }

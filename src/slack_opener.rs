@@ -42,18 +42,29 @@ impl SlackOpener {
     /// # Arguments
     ///
     /// - `channel_name` - The name of the channel to open.
-    pub fn open(&self, name: &ChannelName) -> Result<()> {
+    /// - `browser` - Whether to open the channel in the browser or a Slack app.
+    pub fn open(&self, name: &ChannelName, browser: bool) -> Result<()> {
         let id = self
             .get_channel_id(name)
             .ok_or_else(|| anyhow!("Channel not found: {name}"))?;
 
-        // The `slack://` URI scheme is supported by the Slack desktop app.
-        //
-        // See also: https://api.slack.com/reference/deep-linking#open_a_channel
-        open::that(format!("slack://channel?team={}&id={id}", self.team_id)).map_err(Into::into)
+        if browser {
+            open::that(format!("https://app.slack.com/client/{}/{id}", self.team_id))
+                .map_err(Into::into)
+        } else {
+            // The `slack://` URI scheme is supported by the Slack desktop app.
+            //
+            // See also: https://api.slack.com/reference/deep-linking#open_a_channel
+            open::that(format!("slack://channel?team={}&id={id}", self.team_id)).map_err(Into::into)
+        }
     }
 
-    pub fn open_prompt(&self) -> Result<()> {
+    /// Open an interactive prompt to select a channel to open.
+    ///
+    /// # Arguments
+    ///
+    /// - `browser` - Whether to open the channel in the browser or a Slack app.
+    pub fn open_prompt(&self, browser: bool) -> Result<()> {
         let options = SkimOptionsBuilder::default()
             .height(String::from("5"))
             .multi(false)
@@ -71,7 +82,7 @@ impl SlackOpener {
         match Skim::run_with(&options, Some(rx_item)) {
             Some(out) if out.is_abort => Ok(()),
             Some(out) if !out.selected_items.is_empty() => {
-                self.open(&out.selected_items.first().unwrap().text().into())
+                self.open(&out.selected_items.first().unwrap().text().into(), browser)
             }
             _ => Ok(()),
         }
@@ -89,6 +100,11 @@ impl SlackOpener {
         Ok((path, config))
     }
 
+    /// Update the configuration file with the provided map of channels.
+    ///
+    /// # Arguments
+    ///
+    /// - `channels` - A map of channel names to channel IDs.
     pub async fn update_config(&self, channels: BTreeMap<ChannelName, ChannelId>) -> Result<()> {
         write(&self.path, toml::to_string(&Config { channels, ..self.config.clone() })?).await?;
         Ok(())
