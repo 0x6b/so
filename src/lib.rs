@@ -8,7 +8,7 @@ use serde::Deserialize;
 use skim::SkimItem;
 pub use slack_opener::SlackOpener;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Ord, PartialOrd, Deserialize)]
 pub struct ChannelName {
     inner: String,
 }
