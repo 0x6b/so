@@ -9,7 +9,7 @@ description = "Open a Slack channel using the deep link i.e. slack://, instead o
 anyhow = "1.0.93"
 
 # Command line parsing
-clap = { version = "4.5.21", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.21", features = ["derive", "wrap_help", "env"] }
 
 # Open URI
 open = "5.3.1"
@@ -29,3 +29,6 @@ shellexpand = "3.1.0"
 
 # Async runtime
 tokio = { version = "1.41.1", features = ["fs", "io-std", "io-util", "rt-multi-thread", "macros"] }
+
+# Slack API client
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.6.0" }

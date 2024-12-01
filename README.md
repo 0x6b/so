@@ -10,6 +10,7 @@ Usage: so [OPTIONS] [CHANNEL_NAME] [COMMAND]
 
 Commands:
   generate-completion  Generate shell completion script
+  update-channels      Update the list of available channels in the configuration file
   help                 Print this message or the help of the given subcommand(s)
 
 Arguments:
@@ -56,6 +57,21 @@ team_id = "Txxxxxxxx"
 # ...
 ```
 
+`update-channels` subcommand can be used to update the channel list in the configuration file. Only `[channels]` section will be updated, so you can keep your aliases and team ID. After updating the configuration file, you might want to regenerate the completion script.
+
+```console
+$ so update-channels --help
+Update the list of available channels in the configuration file
+
+Usage: so update-channels --token <TOKEN>
+
+Options:
+  -t, --token <TOKEN>  Slack API token. If not provided, it will be read from the
+                       SLACK_TOKEN environment variable [env:
+                       SLACK_TOKEN=...]
+  -h, --help           Print help
+```
+
 ## Shell Completion
 
 Completion script is available for the [fish](https://fishshell.com/).
@@ -80,8 +96,9 @@ i.e.
 $ so generate-completion
 ```
 
-which means you cannot use the channel name "generate-completion" as an argument. If you want to use it, provide an alias in the configuration file.
+## Note
 
+As you can see, you cannot use the channel name `generate-completion` and `update-channels` as an argument. If you want to use it, provide an alias in the configuration file.
 
 ## License
 

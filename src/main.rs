@@ -1,9 +1,10 @@
-use std::{fmt, fmt::Display, path::PathBuf, str::FromStr};
+use std::{collections::BTreeMap, fmt, fmt::Display, path::PathBuf, str::FromStr};
 
 use anyhow::{anyhow, Error, Result};
 use clap::Parser;
 use shellexpand::tilde;
-use so::{ChannelName, SlackOpener};
+use slack_client::{conversations, Response};
+use so::{ChannelId, ChannelName, SlackOpener};
 use tokio::{
     fs::File,
     io::{AsyncWriteExt, BufWriter},
@@ -36,6 +37,13 @@ pub enum Command {
         /// The path to write the completion script to.
         #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
         path: String,
+    },
+    /// Update the list of available channels in the configuration file.
+    UpdateChannels {
+        /// Slack API token. If not provided, it will be read from the SLACK_TOKEN environment
+        /// variable.
+        #[arg(short, long, env = "SLACK_TOKEN")]
+        token: String,
     },
 }
 
@@ -87,6 +95,47 @@ async fn main() -> Result<()> {
             }
 
             out.flush().await?;
+            Ok(())
+        }
+        Some(Command::UpdateChannels { token }) => {
+            let client = slack_client::ApiClient::new(&token)?;
+
+            let mut results = vec![];
+            let mut request = conversations::List {
+                exclude_archived: Some(true),
+                types: Some(
+                    vec![conversations::ChannelType::Public, conversations::ChannelType::Private]
+                        .into(),
+                ),
+                cursor: None,
+                limit: Some(1000),
+            };
+
+            loop {
+                let channels = client.conversations(&request).await?;
+                let cursor = channels.next_cursor();
+
+                if let Some(channels) = channels.channels {
+                    results.extend(channels)
+                }
+
+                if cursor.is_some() {
+                    request.cursor = cursor;
+                } else {
+                    break;
+                }
+            }
+            results.sort_by(|a, b| a.name.cmp(&b.name));
+
+            let channels = results
+                .iter()
+                .filter(|channel| channel.num_members.unwrap_or(0) > 0)
+                .map(|channel| {
+                    (ChannelName::from_str(channel.name.as_str()).unwrap(), channel.id.clone())
+                })
+                .collect::<BTreeMap<ChannelName, ChannelId>>();
+
+            opener.update_config(channels).await?;
             Ok(())
         }
         None => match channel_name {
