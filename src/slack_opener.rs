@@ -59,7 +59,12 @@ impl SlackOpener {
         }
     }
 
-    pub fn open_prompt(&self) -> Result<()> {
+    /// Open an interactive prompt to select a channel to open.
+    ///
+    /// # Arguments
+    ///
+    /// - `browser` - Whether to open the channel in the browser or a Slack app.
+    pub fn open_prompt(&self, browser: bool) -> Result<()> {
         let options = SkimOptionsBuilder::default()
             .height(String::from("5"))
             .multi(false)
@@ -95,6 +100,11 @@ impl SlackOpener {
         Ok((path, config))
     }
 
+    /// Update the configuration file with the provided map of channels.
+    ///
+    /// # Arguments
+    ///
+    /// - `channels` - A map of channel names to channel IDs.
     pub async fn update_config(&self, channels: BTreeMap<ChannelName, ChannelId>) -> Result<()> {
         write(&self.path, toml::to_string(&Config { channels, ..self.config.clone() })?).await?;
         Ok(())
