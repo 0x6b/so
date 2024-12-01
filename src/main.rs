@@ -88,6 +88,15 @@ async fn main() -> Result<()> {
             out.write_all(b"# fish shell completions for so command\n").await?;
             out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
                 .await?;
+            out.write_all(
+                b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a generate-completion -d \"command: Generate shell completion script\"\n",
+            )
+                .await?;
+            out.write_all(
+                b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a update-channels -d \"command: Update the list of available channels in the configuration file\"\n",
+            )
+                .await?;
+
             for name in opener.channels.iter().map(|c| c.0) {
                 out.write_all(
                     format!(
