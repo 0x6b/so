@@ -142,7 +142,7 @@ async fn main() -> Result<()> {
 
             let channels = results
                 .iter()
-                .filter(|channel| channel.num_members.unwrap_or(0) > 0)
+                .filter(|channel| channel.num_members.unwrap_or(1) > 0)
                 .map(|channel| {
                     (ChannelName::from_str(channel.name.as_str()).unwrap(), channel.id.clone())
                 })
