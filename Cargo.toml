@@ -1,6 +1,6 @@
 [package]
 name = "so"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2021"
 description = "Open a Slack channel using slack://... or https://app.slack.com/... to prevent Slack from leaving the redirect tab open in your browser."
 

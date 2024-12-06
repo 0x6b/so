@@ -106,7 +106,10 @@ impl SlackOpener {
     ///
     /// - `channels` - A map of channel names to channel IDs.
     pub async fn update_config(&self, channels: BTreeMap<ChannelName, ChannelId>) -> Result<()> {
+        let len = channels.len();
         write(&self.path, toml::to_string(&Config { channels, ..self.config.clone() })?).await?;
+        println!("Configuration file updated: {}", self.path.display());
+        println!("Number of channels: {} → {}", self.channels.len(), len);
         Ok(())
     }
 
