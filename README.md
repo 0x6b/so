@@ -9,16 +9,19 @@ $ so --help
 Usage: so [OPTIONS] [CHANNEL_NAME] [COMMAND]
 
 Commands:
-  generate-completion  Generate shell completion script
-  update-channels      Update the list of available channels in the configuration file
+  update-channels      Update the list of available channels in the
+                       configuration file
+  generate-completion  Generate a shell completion script. At the moment, only
+                       `fish` is supported
   help                 Print this message or the help of the given subcommand(s)
 
 Arguments:
-  [CHANNEL_NAME]  The name of the channel to open. If not provided, select from a list
-                  of available channels
+  [CHANNEL_NAME]  The name of the channel to open. If not provided, select from
+                  a list of available channels
 
 Options:
-  -b, --browser          Open the channel in the browser instead of the Slack app
+  -b, --browser          Open the channel in the browser instead of the Slack
+                         app
   -c, --config <CONFIG>  Path to the configuration file. Defaults to
                          $XDG_CONFIG_HOME/so/config.toml
   -h, --help             Print help
