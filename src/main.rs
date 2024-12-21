@@ -112,6 +112,7 @@ async fn main() -> Result<()> {
             Ok(())
         }
         Some(Command::UpdateChannels { token }) => {
+            println!("Updating channels.");
             let client = slack_client::ApiClient::new(&token)?;
 
             let mut results = vec![];
@@ -126,6 +127,7 @@ async fn main() -> Result<()> {
             };
 
             loop {
+                println!("Got {} channels", results.len());
                 let channels = client.conversations(&request).await?;
                 let cursor = channels.next_cursor();
 
@@ -141,6 +143,7 @@ async fn main() -> Result<()> {
             }
             results.sort_by(|a, b| a.name.cmp(&b.name));
 
+            println!("Found {} channels, filtering out channels with no members", results.len());
             let channels = results
                 .iter()
                 .filter(|channel| channel.num_members.unwrap_or(1) > 0)
