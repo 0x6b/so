@@ -25,29 +25,28 @@ pub struct Args {
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 
-    /// Generate shell completion scripts.
     #[clap(subcommand)]
     pub command: Option<Command>,
 }
 
 #[derive(Debug, Parser)]
 pub enum Command {
-    /// Generate shell completion script.
-    GenerateCompletion {
-        /// The shell to generate completion scripts for. At the moment, only `fish` is supported.
-        #[arg(short, long, default_value = "fish")]
-        shell: Shell,
-
-        /// The path to write the completion script to.
-        #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
-        path: String,
-    },
     /// Update the list of available channels in the configuration file.
     UpdateChannels {
         /// Slack API token. If not provided, it will be read from the SLACK_TOKEN environment
         /// variable.
         #[arg(short, long, env = "SLACK_TOKEN")]
         token: String,
+    },
+    /// Generate a shell completion script. At the moment, only `fish` is supported.
+    GenerateCompletion {
+        /// The shell to generate completion scripts for.
+        #[arg(short, long, default_value = "fish")]
+        shell: Shell,
+
+        /// The path to write the completion script to.
+        #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
+        path: String,
     },
 }
 
@@ -82,8 +81,8 @@ async fn main() -> Result<()> {
 
     match command {
         Some(Command::GenerateCompletion { shell: _, path }) => {
-            let mut out =
-                BufWriter::new(File::create(PathBuf::from(tilde(&path).to_string())).await?);
+            let file = PathBuf::from(tilde(&path).to_string());
+            let mut out = BufWriter::new(File::create(&file).await?);
 
             out.write_all(b"# fish shell completions for so command\n").await?;
             out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
@@ -108,6 +107,8 @@ async fn main() -> Result<()> {
             }
 
             out.flush().await?;
+            println!("Auto completion file updated: {}", file.display());
+
             Ok(())
         }
         Some(Command::UpdateChannels { token }) => {
