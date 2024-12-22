@@ -61,19 +61,30 @@ team_id = "Txxxxxxxx"
 # ...
 ```
 
-`update-channels` subcommand can be used to update the channel list in the configuration file. Only `[channels]` section will be updated, so you can keep your aliases and team ID. After updating the configuration file, you might want to regenerate the completion script.
+`update-channels` subcommand can be used to update the channel list in the configuration file. Only `[channels]` section will be updated, so you can keep your aliases and team ID. 
+
+If `--generate-completion` option is provided, a completion script will be generated after updating the channels. Provide `--shell` and `--path` options to customize the shell and the path to write the completion script.
+
+```console
+After updating the configuration file, you might want to regenerate the completion script.
 
 ```console
 $ so update-channels --help
 Update the list of available channels in the configuration file
 
-Usage: so update-channels --token <TOKEN>
+Usage: so update-channels [OPTIONS] --token <TOKEN>
 
 Options:
-  -t, --token <TOKEN>  Slack API token. If not provided, it will be read from the
-                       SLACK_TOKEN environment variable [env:
-                       SLACK_TOKEN=...]
-  -h, --help           Print help
+  -t, --token <TOKEN>        Slack API token. If not provided, it will be read
+                             from the SLACK_TOKEN environment variable [env:
+                             SLACK_TOKEN=...]
+  -g, --generate-completion  Generate a shell completion script after
+                             successfully updating the channels
+  -s, --shell <SHELL>        The shell to generate completion scripts for
+                             [default: fish]
+  -p, --path <PATH>          The path to write the completion script to
+                             [default: ~/.config/fish/completions/so.fish]
+  -h, --help                 Print help
 ```
 
 ## Shell Completion
@@ -82,13 +93,13 @@ Completion script is available for the [fish](https://fishshell.com/).
 
 ```console
 $ so generate-completion --help
-Generate shell completion script
+Generate a shell completion script. At the moment, only `fish` is supported
 
 Usage: so generate-completion [OPTIONS]
 
 Options:
-  -s, --shell <SHELL>  The shell to generate completion scripts for. At the moment,
-                       only `fish` is supported [default: fish]
+  -s, --shell <SHELL>  The shell to generate completion scripts for [default:
+                       fish]
   -p, --path <PATH>    The path to write the completion script to [default:
                        ~/.config/fish/completions/so.fish]
   -h, --help           Print help
