@@ -6,29 +6,29 @@ description = "Open a Slack channel using slack://... or https://app.slack.com/.
 
 [dependencies]
 # Error handling
-anyhow = "1.0.93"
+anyhow = "1.0.94"
 
 # Command line parsing
-clap = { version = "4.5.21", features = ["derive", "wrap_help", "env"] }
+clap = { version = "4.5.23", features = ["derive", "wrap_help", "env"] }
 
 # Open URI
 open = "5.3.1"
 
 # Ser/de
-serde = { version = "1.0.215", features = ["derive"] }
+serde = { version = "1.0.216", features = ["derive"] }
 toml = "0.8.19"
 
 # Configuration directory
 xdg = "2.5.2"
 
 # Interactive selection
-skim = "0.15.0"
+skim = "0.15.5"
 
 # Tilde expansion
 shellexpand = "3.1.0"
 
 # Async runtime
-tokio = { version = "1.41.1", features = ["fs", "io-std", "io-util", "rt-multi-thread", "macros"] }
+tokio = { version = "1.42.0", features = ["fs", "io-std", "io-util", "rt-multi-thread", "macros"] }
 
 # Slack API client
-slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.6.0" }
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.8.1" }
