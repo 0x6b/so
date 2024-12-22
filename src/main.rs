@@ -37,6 +37,18 @@ pub enum Command {
         /// variable.
         #[arg(short, long, env = "SLACK_TOKEN")]
         token: String,
+
+        /// Generate a shell completion script after successfully updating the channels.
+        #[arg(short, long)]
+        generate_completion: bool,
+
+        /// The shell to generate completion scripts for.
+        #[arg(short, long, default_value = "fish")]
+        shell: Shell,
+
+        /// The path to write the completion script to.
+        #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
+        path: String,
     },
     /// Generate a shell completion script. At the moment, only `fish` is supported.
     GenerateCompletion {
@@ -81,78 +93,13 @@ async fn main() -> Result<()> {
 
     match command {
         Some(Command::GenerateCompletion { shell: _, path }) => {
-            let file = PathBuf::from(tilde(&path).to_string());
-            let mut out = BufWriter::new(File::create(&file).await?);
-
-            out.write_all(b"# fish shell completions for so command\n").await?;
-            out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
-                .await?;
-            out.write_all(
-                b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a generate-completion -d \"command: Generate shell completion script\"\n",
-            )
-                .await?;
-            out.write_all(
-                b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a update-channels -d \"command: Update the list of available channels in the configuration file\"\n",
-            )
-                .await?;
-
-            for name in opener.channels.iter().map(|c| c.0) {
-                out.write_all(
-                    format!(
-                        "complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a \"{name}\" -d \"#{name}\"\n",
-                    )
-                        .as_bytes(),
-                )
-                    .await?;
-            }
-
-            out.flush().await?;
-            println!("Auto completion file updated: {}", file.display());
-
-            Ok(())
+            generate_fish_completion(&opener, &path).await
         }
-        Some(Command::UpdateChannels { token }) => {
-            println!("Updating channels.");
-            let client = slack_client::ApiClient::new(&token)?;
-
-            let mut results = vec![];
-            let mut request = conversations::List {
-                exclude_archived: Some(true),
-                types: Some(
-                    vec![conversations::ChannelType::Public, conversations::ChannelType::Private]
-                        .into(),
-                ),
-                cursor: None,
-                limit: Some(1000),
-            };
-
-            loop {
-                println!("Got {} channels", results.len());
-                let channels = client.conversations(&request).await?;
-                let cursor = channels.next_cursor();
-
-                if let Some(channels) = channels.channels {
-                    results.extend(channels)
-                }
-
-                if cursor.is_some() {
-                    request.cursor = cursor;
-                } else {
-                    break;
-                }
+        Some(Command::UpdateChannels { token, generate_completion, shell: _, path }) => {
+            update_channels(&opener, &token).await?;
+            if generate_completion {
+                generate_fish_completion(&opener, &path).await?;
             }
-            results.sort_by(|a, b| a.name.cmp(&b.name));
-
-            println!("Found {} channels, filtering out channels with no members", results.len());
-            let channels = results
-                .iter()
-                .filter(|channel| channel.num_members.unwrap_or(1) > 0)
-                .map(|channel| {
-                    (ChannelName::from_str(channel.name.as_str()).unwrap(), channel.id.clone())
-                })
-                .collect::<BTreeMap<ChannelName, ChannelId>>();
-
-            opener.update_config(channels).await?;
             Ok(())
         }
         None => match channel_name {
@@ -160,4 +107,77 @@ async fn main() -> Result<()> {
             None => opener.open_prompt(browser),
         },
     }
+}
+
+async fn update_channels(opener: &SlackOpener, token: &str) -> Result<()> {
+    println!("Updating channels.");
+    let client = slack_client::ApiClient::new(&token)?;
+
+    let mut results = vec![];
+    let mut request = conversations::List {
+        exclude_archived: Some(true),
+        types: Some(
+            vec![conversations::ChannelType::Public, conversations::ChannelType::Private].into(),
+        ),
+        cursor: None,
+        limit: Some(1000),
+    };
+
+    loop {
+        println!("Got {} channels", results.len());
+        let channels = client.conversations(&request).await?;
+        let cursor = channels.next_cursor();
+
+        if let Some(channels) = channels.channels {
+            results.extend(channels)
+        }
+
+        if cursor.is_some() {
+            request.cursor = cursor;
+        } else {
+            break;
+        }
+    }
+    results.sort_by(|a, b| a.name.cmp(&b.name));
+
+    println!("Found {} channels, filtering out channels with no members", results.len());
+    let channels = results
+        .iter()
+        .filter(|channel| channel.num_members.unwrap_or(1) > 0)
+        .map(|channel| (ChannelName::from_str(channel.name.as_str()).unwrap(), channel.id.clone()))
+        .collect::<BTreeMap<ChannelName, ChannelId>>();
+
+    opener.update_config(channels).await
+}
+
+async fn generate_fish_completion(opener: &SlackOpener, path: &str) -> Result<()> {
+    let file = PathBuf::from(tilde(&path).to_string());
+    let mut out = BufWriter::new(File::create(&file).await?);
+
+    out.write_all(b"# fish shell completions for so command\n").await?;
+    out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
+        .await?;
+    out.write_all(
+        b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a generate-completion -d \"command: Generate shell completion script\"\n",
+    )
+        .await?;
+    out.write_all(
+        b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a update-channels -d \"command: Update the list of available channels in the configuration file\"\n",
+    )
+        .await?;
+
+    for name in opener.channels.iter().map(|c| c.0) {
+        out.write_all(
+            format!(
+                "complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a \"{name}\" -d \"#{name}\"\n",
+            )
+                .as_bytes(),
+        )
+            .await?;
+    }
+
+    out.flush().await?;
+    println!("Auto completion file updated: {}", file.display());
+
+    Ok(())
 }
