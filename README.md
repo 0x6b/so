@@ -9,6 +9,7 @@ $ so --help
 Usage: so [OPTIONS] [CHANNEL_NAME] [COMMAND]
 
 Commands:
+  edit                 Edit the configuration file with $EDITOR
   update-channels      Update the list of available channels in the
                        configuration file
   generate-completion  Generate a shell completion script. At the moment, only
@@ -64,9 +65,6 @@ team_id = "Txxxxxxxx"
 `update-channels` subcommand can be used to update the channel list in the configuration file. Only `[channels]` section will be updated, so you can keep your aliases and team ID. 
 
 If `--generate-completion` option is provided, a completion script will be generated after updating the channels. Provide `--shell` and `--path` options to customize the shell and the path to write the completion script.
-
-```console
-After updating the configuration file, you might want to regenerate the completion script.
 
 ```console
 $ so update-channels --help
