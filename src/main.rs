@@ -48,7 +48,7 @@ pub enum Command {
         #[arg(short, long, default_value = "fish")]
         shell: Shell,
 
-        /// The path to write the completion script to.
+        /// The path to the completion script.
         #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
         path: String,
     },
@@ -58,7 +58,7 @@ pub enum Command {
         #[arg(short, long, default_value = "fish")]
         shell: Shell,
 
-        /// The path to write the completion script to.
+        /// The path to the completion script.
         #[arg(short, long, default_value = "~/.config/fish/completions/so.fish")]
         path: String,
     },
