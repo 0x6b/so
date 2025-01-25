@@ -12,7 +12,7 @@ use crate::{ChannelId, ChannelName, Config};
 /// channel without opening a browser).
 pub struct SlackOpener {
     /// Resolved path to the configuration file.
-    path: PathBuf,
+    pub path: PathBuf,
 
     /// The configuration.
     config: Config,
@@ -107,9 +107,30 @@ impl SlackOpener {
     /// - `channels` - A map of channel names to channel IDs.
     pub async fn update_config(&self, channels: BTreeMap<ChannelName, ChannelId>) -> Result<()> {
         let len = channels.len();
+
+        println!("Number of channels: {} → {}", self.channels.len(), len);
+
+        let new_channels = channels
+            .keys()
+            .filter(|name| !self.channels.contains_key(name))
+            .collect::<Vec<_>>();
+        if !new_channels.is_empty() {
+            println!("New channel(s):");
+            new_channels.iter().for_each(|name| println!("  #{name}"));
+        }
+
+        let removed_channels = self
+            .channels
+            .keys()
+            .filter(|name| !channels.contains_key(name))
+            .collect::<Vec<_>>();
+        if !removed_channels.is_empty() {
+            println!("Removed channel(s):");
+            removed_channels.iter().for_each(|name| println!("  #{name}"));
+        }
+
         write(&self.path, toml::to_string(&Config { channels, ..self.config.clone() })?).await?;
         println!("Configuration file updated: {}", self.path.display());
-        println!("Number of channels: {} → {}", self.channels.len(), len);
         Ok(())
     }
 
