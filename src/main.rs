@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt, fmt::Display, path::PathBuf, str::FromStr};
+use std::{collections::BTreeMap, env, fmt, fmt::Display, path::PathBuf, process, str::FromStr};
 
 use anyhow::{anyhow, Error, Result};
 use clap::Parser;
@@ -31,6 +31,8 @@ pub struct Args {
 
 #[derive(Debug, Parser)]
 pub enum Command {
+    /// Edit the configuration file with $EDITOR.
+    Edit,
     /// Update the list of available channels in the configuration file.
     UpdateChannels {
         /// Slack API token. If not provided, it will be read from the SLACK_TOKEN environment
@@ -92,6 +94,15 @@ async fn main() -> Result<()> {
     let opener = SlackOpener::from(config).await?;
 
     match command {
+        Some(Command::Edit) => {
+            match process::Command::new(env::var("EDITOR").unwrap_or_else(|_| "vi".to_string()))
+                .arg(&opener.path)
+                .spawn()
+            {
+                Ok(mut child) => child.wait().map(|_| ()).map_err(Into::into),
+                Err(e) => anyhow::bail!("Failed to open editor: {e}"),
+            }
+        }
         Some(Command::GenerateCompletion { shell: _, path }) => {
             generate_fish_completion(&opener, &path).await
         }
@@ -158,11 +169,15 @@ async fn generate_fish_completion(opener: &SlackOpener, path: &str) -> Result<()
     out.write_all(b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\"\n")
         .await?;
     out.write_all(
-        b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a generate-completion -d \"command: Generate shell completion script\"\n",
+        b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a edit -d \"Edit the configuration file with $EDITOR\"\n",
     )
         .await?;
     out.write_all(
         b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a update-channels -d \"command: Update the list of available channels in the configuration file\"\n",
+    )
+        .await?;
+    out.write_all(
+        b"complete -c so -f -n \"not __fish_seen_subcommand_from completion\" -a generate-completion -d \"command: Generate a shell completion script\"\n",
     )
         .await?;
 

@@ -12,7 +12,7 @@ use crate::{ChannelId, ChannelName, Config};
 /// channel without opening a browser).
 pub struct SlackOpener {
     /// Resolved path to the configuration file.
-    path: PathBuf,
+    pub path: PathBuf,
 
     /// The configuration.
     config: Config,
